@@ -1,5 +1,16 @@
 const http = require('http');
 
-http.createServer((req, res) => {
+const server = http.createServer((req, res) => {
     res.end("worker,pid" + process.pid + "  ,ppid:" + process.ppid);
-}).listen(3112);
+});
+
+let worker;
+process.title = "node-worker";
+process.on("message", function (message, sendHandle) {
+    if (message === "server") {
+        worker = sendHandle;
+        worker.on("connection", function (socker) {
+            server.emit("connection", socker)
+        })
+    }
+});
